@@ -1,0 +1,1 @@
+Download and extract training and test data from https://financialforecasting.gresearch.co.uk/.

@@ -84,6 +84,7 @@ celerybeat-schedule
 
 # virtualenv
 .venv
+.virtualenv
 venv/
 ENV/
 
@@ -99,3 +100,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+data/*.csv
+.idea
