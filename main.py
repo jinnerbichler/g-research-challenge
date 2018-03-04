@@ -5,7 +5,7 @@ import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.INFO)
 
 NUMERICAL_COLS = ['x0', 'x1', 'x2', 'x3A', 'x3B', 'x3C', 'x3D', 'x3E', 'x4', 'x5', 'x6']
-NUM_HIDDEN_UNITS = [2048, 1024, 512, 256]
+NUM_HIDDEN_UNITS = [2048, 512, 256, 128, 64]
 
 
 # normalize numerical data
@@ -61,6 +61,8 @@ def main(argv):
     test_data = pd.read_csv('data/test.csv', index_col=0).fillna(method='ffill')
     all_data = pd.concat([train_data, test_data])
 
+    model_num = 3
+
     # normalize continous data
     normalize_data(train=train_data, test=test_data)
 
@@ -85,15 +87,15 @@ def main(argv):
         y=train_data['y'].values.astype(np.float32),
         batch_size=100,
         num_epochs=None,
-        shuffle=True)
+        shuffle=False)
 
     # Create the Estimator
-    g_regression = tf.estimator.Estimator(model_fn=g_model_fn,
-                                          params=params,
-                                          model_dir="/tmp/g_model")
+    g_regression_model = tf.estimator.Estimator(model_fn=g_model_fn,
+                                                params=params,
+                                                model_dir='/tmp/g_model/{}'.format(model_num))
 
     # train the estimator
-    g_regression.train(input_fn=train_input_fn, steps=20000)
+    g_regression_model.train(input_fn=train_input_fn, steps=317000)
 
     # perform inference
     input_predict = {
@@ -105,13 +107,13 @@ def main(argv):
     predict_input_fn = tf.estimator.inputs.numpy_input_fn(x=input_predict,
                                                           num_epochs=1,
                                                           shuffle=False)
-    predictions = g_regression.predict(input_fn=predict_input_fn)
+    predictions = g_regression_model.predict(input_fn=predict_input_fn)
     predictions = [p[0] for p in predictions]
 
     # prepare submission
     submission = pd.DataFrame(predictions, columns=['y'])
     submission.index.name = 'Index'
-    submission.to_csv('submission/submission.csv')
+    submission.to_csv('submissions/submission_{}.csv'.format(model_num))
 
 
 if __name__ == "__main__":
