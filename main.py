@@ -22,7 +22,7 @@ def main(argv):
     for lr in [0.01, 0.001, 0.0001, 0.00001]:
         for dr in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
             for hu in hidden_units:
-                for shuffle in [False]:
+                for shuffle in [False, True]:
                     execute(learning_rate=lr, dropout_rate=dr, hidden_units=hu, shuffle=shuffle)
 
 
@@ -59,10 +59,11 @@ def g_model_fn(features, labels, mode, params):
 
     with tf.name_scope('loss'):
         # weighted MSE
-        loss = tf.reduce_mean(tf.pow(labels - predictions, 2) * features['weights'], name='loss')
+        loss_name = 'loss_eval' if mode == tf.estimator.ModeKeys.EVAL else 'loss'
+        loss = tf.reduce_mean(tf.pow(labels - predictions, 2) * features['weights'], name=loss_name)
 
     metrics = {
-        "accuracy": tf.metrics.accuracy(labels=labels, predictions=predictions)
+        # "accuracy": tf.metrics.accuracy(labels=labels, predictions=predictions)
     }
 
     if mode == tf.estimator.ModeKeys.TRAIN:
@@ -100,12 +101,13 @@ def execute(learning_rate, dropout_rate, hidden_units, shuffle):
     print('Start training with model {}'.format(model_name))
 
     # specify training
+    batch_size = 100
     train_input_fn = tf.estimator.inputs.numpy_input_fn(x=frame_to_dict(train_data),
                                                         y=train_data['y'].values.astype(np.float32),
-                                                        batch_size=100,
+                                                        batch_size=batch_size,
                                                         num_epochs=1,
                                                         shuffle=shuffle)
-    train_spec = tf.estimator.TrainSpec(input_fn=train_input_fn, max_steps=105000)
+    train_spec = tf.estimator.TrainSpec(input_fn=train_input_fn, max_steps=120000)
 
     # specify validation
     eval_input_fn = tf.estimator.inputs.numpy_input_fn(x=frame_to_dict(eval_data),

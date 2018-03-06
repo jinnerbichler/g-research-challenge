@@ -93,8 +93,16 @@ elif [ "$1" == "deploy" ]; then
     gcloud compute ssh ${INSTANCE_NAME} --command="sudo docker-compose -f ~/docker-compose.yml up -d --build" --zone us-east1-d
     gcloud compute ssh ${INSTANCE_NAME} --command="sudo docker-compose -f ~/docker-compose.yml logs -f" --zone us-east1-d
 
+elif [ "$1" == "reset" ]; then
+
+    gcloud compute ssh ${INSTANCE_NAME} --command="sudo docker-compose -f ~/docker-compose.yml down -v" --zone us-east1-d
+
 elif [ "$1" == "logs" ]; then
 
     gcloud compute ssh ${INSTANCE_NAME} --command="sudo docker-compose -f ~/docker-compose.yml logs -f" --zone us-east1-d
+
+elif [ "$1" == "submissions" ]; then
+
+    gcloud compute scp ${INSTANCE_NAME}:~/submissions/* ./submissions/ --zone us-east1-d
 
 fi
