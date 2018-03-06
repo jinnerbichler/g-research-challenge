@@ -1,7 +1,21 @@
 version: '2'
 
 services:
+
   tensorflow:
     build: .
+    environment:
+      - "MODELS_DIR=/models"
+    volumes:
+      - model-volume:/models/
+
+  tensorboard:
+    build: .
     ports:
-      - "0.0.0.0:8888:8888"
+      - "80:6006"
+    volumes:
+      - model-volume:/models/
+    entrypoint: ["tensorboard",  "--logdir=/models/", "--host=0.0.0.0", "--port=6006"]
+
+volumes:
+  model-volume:

@@ -50,4 +50,6 @@ RUN pip3 install -r requirements-gpu.txt
 # For CUDA profiling, TensorFlow requires CUPTI.
 ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH
 
+EXPOSE 6006
+
 ENTRYPOINT ["/usr/bin/python3", "main.py"]

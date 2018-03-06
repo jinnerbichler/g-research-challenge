@@ -15,7 +15,7 @@ if [ "$1" == "create" ]; then
     --preemptible
 
     while [ -n "$(gcloud compute ssh ${INSTANCE_NAME} --command "echo ok" --zone us-east1-d 2>&1 > /dev/null)" ]; do
-        echo "Waiting for VM to be accessible"
+        echo "Waiting for VM to be available"
         sleep 1.0
     done
 
@@ -90,6 +90,11 @@ elif [ "$1" == "deploy" ]; then
         main.py \
         requirements-gpu.txt \
         ${INSTANCE_NAME}:~/ --zone us-east1-d
-    gcloud compute ssh ${INSTANCE_NAME} --command="sudo docker-compose -f ~/docker-compose.yml up --build" --zone us-east1-d
+    gcloud compute ssh ${INSTANCE_NAME} --command="sudo docker-compose -f ~/docker-compose.yml up -d --build" --zone us-east1-d
+    gcloud compute ssh ${INSTANCE_NAME} --command="sudo docker-compose -f ~/docker-compose.yml logs -f" --zone us-east1-d
+
+elif [ "$1" == "logs" ]; then
+
+    gcloud compute ssh ${INSTANCE_NAME} --command="sudo docker-compose -f ~/docker-compose.yml logs -f" --zone us-east1-d
 
 fi
