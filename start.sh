@@ -90,7 +90,7 @@ elif [ "$1" == "deploy" ]; then
         main.py \
         requirements-gpu.txt \
         ${INSTANCE_NAME}:~/ --zone us-east1-d
-    gcloud compute ssh ${INSTANCE_NAME} --command="sudo docker-compose -f ~/docker-compose.yml up -d --build" --zone us-east1-d
+    gcloud compute ssh ${INSTANCE_NAME} --command="sudo docker-compose -f ~/docker-compose.yml up -d --build --force-recreate" --zone us-east1-d
     gcloud compute ssh ${INSTANCE_NAME} --command="sudo docker-compose -f ~/docker-compose.yml logs -f" --zone us-east1-d
 
 elif [ "$1" == "reset" ]; then
