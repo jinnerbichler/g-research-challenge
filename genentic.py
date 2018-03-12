@@ -121,9 +121,8 @@ class Optimizer:
         children = []
         for _ in range(2):
 
-            child_params = {}
-
             # loop through the parameters and pick params for the kid.
+            child_params = {}
             for param in self.param_choices:
                 child_params[param] = random.choice([mother['params'][param], father['params'][param]])
 
@@ -165,12 +164,10 @@ class Optimizer:
             if self.random_select > random.random():
                 parents.append(individual)
 
-        # now find out how many spots we have left to fill.
+        # add children, which are bred from two remaining networks.
         parents_length = len(parents)
         desired_length = len(population) - parents_length
         children = []
-
-        # add children, which are bred from two remaining networks.
         while len(children) < desired_length:
 
             # get a random mom and dad.
