@@ -4,6 +4,7 @@ services:
 
   tensorflow:
     build: .
+    entrypoint: ["/usr/bin/python3", "genetic.py"]
     environment:
       - "MODELS_DIR=/models"
     volumes:

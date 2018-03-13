@@ -88,6 +88,7 @@ elif [ "$1" == "deploy" ]; then
         ./docker-compose.yml \
         ./Dockerfile \
         main.py \
+        genetic.py \
         requirements-gpu.txt \
         ${INSTANCE_NAME}:~/ --zone us-east1-d
     gcloud compute ssh ${INSTANCE_NAME} --command="sudo docker-compose -f ~/docker-compose.yml up -d --build --force-recreate" --zone us-east1-d

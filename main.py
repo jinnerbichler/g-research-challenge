@@ -2,7 +2,6 @@ import os
 import pandas as pd
 import numpy as np
 import tensorflow as tf
-from tensorflow.python import debug as tf_debug
 from sklearn.model_selection import train_test_split
 
 tf.logging.set_verbosity(tf.logging.INFO)
@@ -30,7 +29,8 @@ def main(argv):
                     print(ex)
 
 
-def evaluate(learning_rate, dropout_rate, hidden_units, shuffle, batch_size, l2_reg_scale, max_steps=7e5):
+def evaluate(learning_rate, dropout_rate, hidden_units, shuffle, batch_size, l2_reg_scale,
+             max_steps=7e5, activation=tf.nn.sigmoid):
     train_data = pd.read_csv('data/train.csv', index_col=0).fillna(method='ffill')
     test_data = pd.read_csv('data/test.csv', index_col=0).fillna(method='ffill')
     all_data = pd.concat([train_data, test_data])
@@ -47,6 +47,7 @@ def evaluate(learning_rate, dropout_rate, hidden_units, shuffle, batch_size, l2_
         'num_days': all_data['Day'].max(),
         'num_markets': all_data['Market'].max(),
         'num_stocks': all_data['Stock'].max(),
+        'activation': activation,
         'reg_scale': l2_reg_scale,
         'learning_rate': learning_rate,
         'dropout_rate': dropout_rate,
@@ -64,7 +65,7 @@ def evaluate(learning_rate, dropout_rate, hidden_units, shuffle, batch_size, l2_
                                                         batch_size=batch_size,
                                                         num_epochs=1,
                                                         shuffle=shuffle)
-    max_steps = int(7e5)
+    max_steps = int(max_steps)
     # hooks = [tf_debug.TensorBoardDebugHook("tensorboard:8080")]
     hooks = []
     train_spec = tf.estimator.TrainSpec(input_fn=train_input_fn, max_steps=max_steps, hooks=hooks)
@@ -134,13 +135,15 @@ def g_model_fn(features, labels, mode, params):
         net = tf.concat(values=merged, axis=1, name='merged_input')
 
     with tf.name_scope('net'):
+        activation_func = params['activation']
         for counter, hidden_unit in enumerate(params['hidden_units']):
             hu_name = 'fc_{}'.format(counter)
             with tf.name_scope(hu_name):
                 regularizer = tf.contrib.layers.l2_regularizer(scale=params['reg_scale'])
                 net = tf.layers.dense(inputs=net, units=hidden_unit,
                                       kernel_initializer=tf.random_normal_initializer(stddev=0.1),
-                                      activation=tf.nn.tanh, kernel_regularizer=regularizer, name=hu_name)
+                                      activation=activation_func, kernel_regularizer=regularizer,
+                                      name=hu_name)
 
                 dense_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, hu_name)
                 tf.summary.histogram('kernel', dense_vars[0], family=hu_name)
@@ -192,9 +195,9 @@ def g_model_fn(features, labels, mode, params):
 
 
 def parameter_to_name(params):
-    return 'LR={},DR={:.1f},HU={},SH={},RS={:.5f},BS={}'.format(
+    return 'LR={},DR={:.1f},HU={},SH={},RS={:.5f},BS={},ACT={}'.format(
         params['learning_rate'], params['dropout_rate'], '-'.join([str(x) for x in params['hidden_units']]),
-        params['shuffle'], params['reg_scale'], params['batch_size'])
+        params['shuffle'], params['reg_scale'], params['batch_size'], params['activation'].__name__)
 
 
 def make_features(dataframe):
